@@ -1,7 +1,8 @@
 from aiogram import types, Bot, F
 from aiogram.filters.callback_data import CallbackData
-from aiogram.types import Message
+from aiogram.types import Message, BufferedInputFile, FSInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from psycopg2 import Binary
 
 import bot.__init__ as m
 from db_scripts import getCategory, getAnswer, getQuestion
@@ -27,12 +28,13 @@ async def cat(message: types.Message):
         buttons.append([])
         buttons[-1].append(types.InlineKeyboardButton(
             text=str(data[1]),
-            callback_data=f"answer | {data[0]}"))
+            callback_data=f"questions | {data[0]}"))
     keyboard = types.InlineKeyboardMarkup(inline_keyboard=buttons)
     await message.answer(
         "Категории вопросов",
         reply_markup=keyboard
     )
+
 
 @m.dp.callback_query()
 async def callback(callback):
@@ -41,15 +43,25 @@ async def callback(callback):
     else:
         await answer(callback, callback.data.split(' | ')[1])
 
+
 async def questions(callback, id):
     quest = getQuestion(id)
     builder = InlineKeyboardBuilder()
     buttons = []
     for data in quest:
         buttons.append([])
-        buttons[-1].append(types.InlineKeyboardButton(
-            text=str(data[1]),
-            callback_data=f"answer | {data[0]}"))
+        if str(data[1]) == '1':
+            try:
+                buttons[-1].append(types.InlineKeyboardButton(
+                    text=str(data[2]),
+                    url=str(data[3]),
+                    callback_data=f"answer | {data[0]}"))
+            except:
+                print("Ошибка при формировании ссылки на ресурс")
+        else:
+            buttons[-1].append(types.InlineKeyboardButton(
+                text=str(data[2]),
+                callback_data=f"answer | {data[0]}"))
     keyboard = types.InlineKeyboardMarkup(inline_keyboard=buttons)
     await callback.answer()
     await callback.message.answer(
@@ -57,9 +69,18 @@ async def questions(callback, id):
         reply_markup=keyboard
     )
 
+
 async def answer(callback, id):
     ans = getAnswer(id)
-    await callback.answer()
-    await callback.message.answer(
-        str(ans)
-    )
+    if str(ans[1]) == '3':
+        try:
+            file = FSInputFile(ans[0], filename=ans[0].split('//')[-1])
+            await callback.answer()
+            await m.bot.send_document(callback.message.chat.id, file)
+        except:
+            callback.message.answer("Ошибка при отправке файла")
+    else:
+        await callback.answer()
+        await callback.message.answer(
+            str(ans[0])
+        )
