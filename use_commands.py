@@ -79,6 +79,8 @@ async def quest(message: types.Message):
 
 async def add(message: types.Message):
     rand = Random()
+    text = message.text
+
     t = message.text.replace("\r\n", ":").replace("/add", "").replace("\n", ":")
     text = t.split(":")
     quest = ""
@@ -93,11 +95,10 @@ async def add(message: types.Message):
             type = 2
         if(i.lower() == "категория"):
             cat = text[text.index(i) + 1]
-    # if message.photo is not None or message.document is not None:
-    #     document = Document(message.document)
-    #     ans = f"{rand.random(100)}file.docx"
-    #     document.save(ans)
-    #     type = 3
+    if message.photo is not None or message.document is not None:
+        message.document.download(f"file//{message.document.file_name}")
+        ans = f"file//{message.document.file_name}"
+        type = 3
 
     categories = getCategory()
     for i in categories:
