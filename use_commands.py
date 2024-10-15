@@ -1,10 +1,14 @@
+from random import Random
+
+import bot
 from aiogram import types, Bot, F
-from aiogram.filters.callback_data import CallbackData
+# from docx import Document
 from aiogram.types import Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 import bot.__init__ as m
-from db_scripts import getCategory, getAnswer, getQuestion
+from config import ADMIN
+from db_scripts import getCategory, getAnswer, getQuestion, addAnswer
 
 
 async def cmd_start(message: Message):
@@ -34,6 +38,7 @@ async def cat(message: types.Message):
         reply_markup=keyboard
     )
 
+
 @m.dp.callback_query()
 async def callback(callback):
     if 'questions' in callback.data:
@@ -41,8 +46,9 @@ async def callback(callback):
     else:
         await answer(callback, callback.data.split(' | ')[1])
 
+
 async def questions(callback, id):
-    quest = getQuestion(id)
+    quest = getQuestion(id, True)
     builder = InlineKeyboardBuilder()
     buttons = []
     for data in quest:
@@ -57,9 +63,50 @@ async def questions(callback, id):
         reply_markup=keyboard
     )
 
+
 async def answer(callback, id):
     ans = getAnswer(id)
     await callback.answer()
     await callback.message.answer(
         str(ans)
     )
+
+
+async def quest(message: types.Message):
+    await m.bot.send_message(chat_id=ADMIN, text=message.text + " от " + message.from_user.full_name)
+    await message.answer("Ваш вопрос был отправлен администратору")
+
+
+async def add(message: types.Message):
+    rand = Random()
+    t = message.text.replace("\r\n", ":").replace("/add", "").replace("\n", ":")
+    text = t.split(":")
+    quest = ""
+    ans = ""
+    cat = ""
+    type = ""
+    for i in text:
+        if(i.lower() == "вопрос"):
+            quest = text[text.index(i) + 1]
+        if(i.lower() == "ответ"):
+            ans = text[text.index(i) + 1]
+            type = 2
+        if(i.lower() == "категория"):
+            cat = text[text.index(i) + 1]
+    # if message.photo is not None or message.document is not None:
+    #     document = Document(message.document)
+    #     ans = f"{rand.random(100)}file.docx"
+    #     document.save(ans)
+    #     type = 3
+
+    categories = getCategory()
+    for i in categories:
+        print(i[1])
+        print(cat)
+        if str(i[1]) == str(cat).replace(" ", ''):
+            cat = i[0]
+            break
+
+    addAnswer(cat, type, quest, ans)
+
+    await message.answer("Ваш вопрос отправлен на согласование")
