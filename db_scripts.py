@@ -9,15 +9,6 @@ def db_connect():
         # в случае сбоя подключения будет выведено сообщение  в STDOUT
         print('Can`t establish connection to database')
 
-# def init_sqlite():
-#     if os.path.isfile('database.db'):
-#         conn = sqlite_connect()
-#         c = conn.cursor()
-#         c.execute('''CREATE TABLE IF NOT EXISTS muteusers (id integer primary key, user_id integer, user_name text, date_end datetime, cause text)''')
-#         c.execute('''CREATE TABLE IF NOT EXISTS banusers (  id integer primary key, user_id integer, user_name text, date_ban datetime, status bool, count int, cause text)''')
-#         conn.commit()
-#         conn.close()
-#     return
 
 def getCategory() -> dict():
     conn = psycopg2.connect('postgresql://postgres:12345@localhost:5432/directory')
@@ -28,10 +19,10 @@ def getCategory() -> dict():
     conn.close()
     return cats
 
-def getQuestion(id):
+def getQuestion(id, isApp):
     conn = db_connect()
     cursor = conn.cursor()
-    cursor.execute("Select id, type, quest, answer from questions where category = "+id)
+    cursor.execute(f"Select id, quest from questions where category = "+id+f" and isapp = {isApp}")
     quest = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -44,4 +35,18 @@ def getAnswer(id):
     ans = cursor.fetchall()
     cursor.close()
     conn.close()
-    return ans[0]
+    return ans[0][0]
+
+def addAnswer(categoryId, type, quest, ans):
+    try:
+        conn = db_connect()
+        cursor = conn.cursor()
+        text = f"INSERT INTO public.questions\
+            (category, type, quest, answer, isapp)\
+            VALUES({categoryId}, {type}, '{quest}', '{ans}', false);"
+        cursor.execute(text)
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except:
+        print("ERROR")

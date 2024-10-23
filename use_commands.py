@@ -1,3 +1,6 @@
+from random import Random
+
+import bot
 from aiogram import types, Bot, F
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import Message, BufferedInputFile, FSInputFile
@@ -5,7 +8,8 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from psycopg2 import Binary
 
 import bot.__init__ as m
-from db_scripts import getCategory, getAnswer, getQuestion
+from config import ADMIN
+from db_scripts import getCategory, getAnswer, getQuestion, addAnswer
 
 
 async def cmd_start(message: Message):
@@ -45,7 +49,7 @@ async def callback(callback):
 
 
 async def questions(callback, id):
-    quest = getQuestion(id)
+    quest = getQuestion(id, True)
     builder = InlineKeyboardBuilder()
     buttons = []
     for data in quest:
@@ -84,3 +88,44 @@ async def answer(callback, id):
         await callback.message.answer(
             str(ans[0])
         )
+
+
+async def quest(message: types.Message):
+    await m.bot.send_message(chat_id=ADMIN, text=message.text + " от " + message.from_user.full_name)
+    await message.answer("Ваш вопрос был отправлен администратору")
+
+
+async def add(message: types.Message):
+    rand = Random()
+    text = message.text
+
+    t = message.text.replace("\r\n", ":").replace("/add", "").replace("\n", ":")
+    text = t.split(":")
+    quest = ""
+    ans = ""
+    cat = ""
+    type = ""
+    for i in text:
+        if(i.lower() == "вопрос"):
+            quest = text[text.index(i) + 1]
+        if(i.lower() == "ответ"):
+            ans = text[text.index(i) + 1]
+            type = 2
+        if(i.lower() == "категория"):
+            cat = text[text.index(i) + 1]
+    if message.photo is not None or message.document is not None:
+        message.document.download(f"file//{message.document.file_name}")
+        ans = f"file//{message.document.file_name}"
+        type = 3
+
+    categories = getCategory()
+    for i in categories:
+        print(i[1])
+        print(cat)
+        if str(i[1]) == str(cat).replace(" ", ''):
+            cat = i[0]
+            break
+
+    addAnswer(cat, type, quest, ans)
+
+    await message.answer("Ваш вопрос отправлен на согласование")
