@@ -31,7 +31,7 @@ def getQuestion(id, isApp):
 def getAnswer(id):
     conn = db_connect()
     cursor = conn.cursor()
-    cursor.execute("Select answer from questions where id = " + id)
+    cursor.execute("Select answer, type from questions where id = " + id)
     ans = cursor.fetchall()
     cursor.close()
     conn.close()
