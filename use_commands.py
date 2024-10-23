@@ -27,7 +27,7 @@ async def cat(message: types.Message):
         buttons.append([])
         buttons[-1].append(types.InlineKeyboardButton(
             text=str(data[1]),
-            callback_data=f"answer | {data[0]}"))
+            callback_data=f"questions | {data[0]}"))
     keyboard = types.InlineKeyboardMarkup(inline_keyboard=buttons)
     await message.answer(
         "Категории вопросов",
