@@ -2,7 +2,7 @@ __all__ = ['bot_commands']
 
 from aiogram import  filters
 from aiogram import  Router
-from use_commands import cmd_start, answer, questions, cat, cmd_help, add, quest
+from use_commands import cmd_start, answer, questions, cat, cmd_help, add, quest, app
 
 
 def register_user_commands(router: Router) -> None:
@@ -11,3 +11,4 @@ def register_user_commands(router: Router) -> None:
     router.message.register(cat, filters.Command(commands=['cat']))
     router.message.register(quest, filters.Command(commands=['quest']))
     router.message.register(add, filters.Command(commands=['add']))
+    router.message.register(app, filters.Command(commands=['app']))

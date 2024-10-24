@@ -28,6 +28,15 @@ def getQuestion(id, isApp):
     conn.close()
     return quest
 
+def getQuestionForApp(isApp):
+    conn = db_connect()
+    cursor = conn.cursor()
+    cursor.execute(f"Select id, category, quest, answer from questions where isapp = {isApp}")
+    quest = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return quest
+
 def getAnswer(id):
     conn = db_connect()
     cursor = conn.cursor()
@@ -44,6 +53,19 @@ def addAnswer(categoryId, type, quest, ans):
         text = f"INSERT INTO public.questions\
             (category, type, quest, answer, isapp)\
             VALUES({categoryId}, {type}, '{quest}', '{ans}', false);"
+        cursor.execute(text)
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except:
+        print("ERROR")
+
+def appQuest(id):
+    try:
+        conn = db_connect()
+        cursor = conn.cursor()
+        text = f"Update public.questions\
+             set isapp = true where id = {id};"
         cursor.execute(text)
         conn.commit()
         cursor.close()

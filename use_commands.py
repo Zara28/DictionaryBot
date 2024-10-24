@@ -8,8 +8,9 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from psycopg2 import Binary
 
 import bot.__init__ as m
+import config
 from config import ADMIN
-from db_scripts import getCategory, getAnswer, getQuestion, addAnswer
+from db_scripts import getCategory, getAnswer, getQuestion, addAnswer, appQuest, getQuestionForApp
 
 
 async def cmd_start(message: Message):
@@ -44,9 +45,15 @@ async def cat(message: types.Message):
 async def callback(callback):
     if 'questions' in callback.data:
         await questions(callback, callback.data.split(' | ')[1])
+    elif 'app' in callback.data:
+        await appQuestCommand(callback.data.split(' | ')[1])
     else:
         await answer(callback, callback.data.split(' | ')[1])
 
+
+async def appQuestCommand(id):
+    appQuest(id)
+    await m.bot.send_message(config.ADMIN, "Вопрос одобрен")
 
 async def questions(callback, id):
     quest = getQuestion(id, True)
@@ -113,12 +120,29 @@ async def add(message: types.Message):
 
     categories = getCategory()
     for i in categories:
-        print(i[1])
-        print(cat)
-        if str(i[1]) == str(cat).replace(" ", ''):
+        if str(i[1]).lower() == str(cat).lower().replace(" ", ''):
             cat = i[0]
             break
 
     addAnswer(cat, type, quest, ans)
 
     await message.answer("Ваш вопрос отправлен на согласование")
+
+async def app(message: types.Message):
+    if str(message.from_user.id) == config.ADMIN:
+        quest = getQuestionForApp(False)
+        if quest is None:
+            await message.answer("Нет вопросов")
+        for i in quest:
+            answer = (f"Категория: {i[1]}\r\n"
+                      f"Вопрос: {i[2]}\r\n"
+                      f"Ответ: {i[3]}\r\n")
+            buttons = []
+            buttons.append([])
+            buttons[-1].append(types.InlineKeyboardButton(
+                text="Одобрить",
+                callback_data=f"app | {i[0]}"))
+            keyboard = types.InlineKeyboardMarkup(inline_keyboard=buttons)
+            await m.bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
+    else:
+        await message.answer("У вас недостаточно прав")
