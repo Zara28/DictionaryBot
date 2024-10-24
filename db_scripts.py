@@ -22,7 +22,7 @@ def getCategory() -> dict():
 def getQuestion(id, isApp):
     conn = db_connect()
     cursor = conn.cursor()
-    cursor.execute(f"Select id, quest from questions where category = "+id+f" and isapp = {isApp}")
+    cursor.execute(f"Select id, type, quest, answer from questions where category = "+id+f" and isapp = {isApp}")
     quest = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -35,7 +35,7 @@ def getAnswer(id):
     ans = cursor.fetchall()
     cursor.close()
     conn.close()
-    return ans[0][0]
+    return ans[0]
 
 def addAnswer(categoryId, type, quest, ans):
     try:

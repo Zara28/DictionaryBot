@@ -50,18 +50,14 @@ async def callback(callback):
 
 async def questions(callback, id):
     quest = getQuestion(id, True)
-    builder = InlineKeyboardBuilder()
     buttons = []
     for data in quest:
         buttons.append([])
         if str(data[1]) == '1':
-            try:
-                buttons[-1].append(types.InlineKeyboardButton(
-                    text=str(data[2]),
-                    url=str(data[3]),
-                    callback_data=f"answer | {data[0]}"))
-            except:
-                print("Ошибка при формировании ссылки на ресурс")
+            buttons[-1].append(types.InlineKeyboardButton(
+                text=str(data[2]),
+                url=str(data[3]),
+                callback_data=f"answer | {data[0]}"))
         else:
             buttons[-1].append(types.InlineKeyboardButton(
                 text=str(data[2]),
@@ -77,12 +73,9 @@ async def questions(callback, id):
 async def answer(callback, id):
     ans = getAnswer(id)
     if str(ans[1]) == '3':
-        try:
-            file = FSInputFile(ans[0], filename=ans[0].split('//')[-1])
-            await callback.answer()
-            await m.bot.send_document(callback.message.chat.id, file)
-        except:
-            callback.message.answer("Ошибка при отправке файла")
+        file = FSInputFile(ans[0], filename=ans[0].split('//')[-1])
+        await callback.answer()
+        await m.bot.send_document(callback.message.chat.id, file)
     else:
         await callback.answer()
         await callback.message.answer(
