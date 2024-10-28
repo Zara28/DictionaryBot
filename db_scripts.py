@@ -1,9 +1,16 @@
 import os
 import psycopg2
+
+from config import DB_CONN
+
+# 'postgresql://postgres:12345@localhost:5432/directory'
 def db_connect():
     try:
         # пытаемся подключиться к базе данных
-        conn = psycopg2.connect('postgresql://postgres:12345@localhost:5432/directory')
+        if DB_CONN is None:
+            conn = psycopg2.connect(os.environ['DB_CONN_V'])
+        else:
+            conn = psycopg2.connect(DB_CONN)
         return conn
     except:
         # в случае сбоя подключения будет выведено сообщение  в STDOUT
@@ -11,7 +18,7 @@ def db_connect():
 
 
 def getCategory() -> dict():
-    conn = psycopg2.connect('postgresql://postgres:12345@localhost:5432/directory')
+    conn = db_connect()
     cursor = conn.cursor()
     cursor.execute("Select * from category")
     cats = cursor.fetchall()

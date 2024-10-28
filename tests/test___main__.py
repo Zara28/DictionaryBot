@@ -1,8 +1,9 @@
 from unittest import TestCase
+import pythonping
 
-from __main__ import main
 
+class Test_Telegram(TestCase):
+    def test_telegram(self):
+        result = pythonping.ping("telegram.com", verbose=False).success()
+        self.assertEqual(result, True)
 
-class Test_start_bot(TestCase):
-    def test_main(self):
-        self.failUnless(main)
