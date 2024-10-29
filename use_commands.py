@@ -5,7 +5,7 @@ from aiogram import types, Bot, F
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import Message, BufferedInputFile, FSInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from psycopg2 import Binary
+
 
 import bot.__init__ as m
 import config
