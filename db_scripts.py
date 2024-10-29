@@ -57,6 +57,7 @@ def addAnswer(categoryId, type, quest, ans):
         conn.commit()
         cursor.close()
         conn.close()
+        return True
     except:
         print("ERROR")
 
